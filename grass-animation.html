@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!--
+Copyright (C) 2013 Vaclav Petras
+
+This program is free software under the GNU General Public
+License (>=v2). See the file LICENSE for details.
+-->
+<html>
+<head>
+    <title>Leaflet Jockey's Ridge elevation</title>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="description" content=""/>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="libs/leaflet/leaflet.ie.css" /><![endif]-->
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <script src="libs/leaflet/leaflet.js"></script>
+    <script src="data/data_file.js"></script>
+    <script>
+
+        // string: http://www.w3schools.com/jsref/jsref_obj_string.asp
+        // array: http://www.w3schools.com/js/js_obj_array.asp
+        // log to browser console:
+        // http://stackoverflow.com/questions/4539253/what-is-console-log
+        // http://getfirebug.com/logging
+        // https://developers.google.com/chrome-developer-tools/docs/console
+
+        // create OpenStreetMap layer
+        var osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            minZoom: 1,
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors <a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC BY-SA</a>'
+        });
+
+        // create MapQuest layer
+        var mapquestUrl = 'http://oatile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png';
+        var subDomains = '1234';
+        var mapquestAttrib = 'Imagery &copy; <a href="http://open.mapquest.co.uk" target="_blank">MapQuest</a>';
+        var mapquest = new L.TileLayer(mapquestUrl, {maxZoom: 18, attribution: mapquestAttrib, subdomains: subDomains});
+
+        // create image overlay layers
+        var imageLayers = new Array();
+        var imageLayersTitles = new Array();
+
+        for(var i = 0; i < layerInfos.length; i += 1) {
+            layerInfo = layerInfos[i];
+            console.log(layerInfo);
+            var overlay = L.imageOverlay('data/' + layerInfo.file, layerInfo.bounds, {opacity: layerInfo.opacity});
+            imageLayers.push(overlay);
+
+            imageLayersTitles.push(layerInfo.title);
+        }
+
+        // derive center from the first image bounds
+        var firstImageBounds = layerInfos[0].bounds
+        // compute approximate center of the image
+        var imageCenter = [(firstImageBounds[0][0] + firstImageBounds[1][0]) / 2,
+                           (firstImageBounds[0][1] + firstImageBounds[1][1]) / 2];
+
+        // create map object
+        // setting default map position and zoom
+        // adding only layers which should be visible at the beginning
+        var map = L.map('map', {
+            center: imageCenter,
+            zoom: 15,
+            layers: [osmLayer, imageLayers[0]]
+        });
+
+        // create list of all base layers
+        var baseLayers = {
+            "Open Street Map": osmLayer,
+            "MapQuest imagery": mapquest
+        };
+
+        // create list of all overlay layers
+        var overlayLayers = {
+        };
+
+        // create layer control
+        // first parameter are base layers
+        // we don't have any, so putting there null
+        // (null is accepted by L.control.layers)
+        var layerControl = L.control.layers(baseLayers, overlayLayers);
+
+        // add layer control to the map object
+        layerControl.addTo(map)
+
+        var currentImageLayerIndex = 0;
+        var maxImageLayerIndex = imageLayers.length - 1;
+        console.log("max %d", maxImageLayerIndex)
+
+        // jQuery selectors:
+        // http://api.jquery.com/category/selectors/
+        // http://www.w3schools.com/jquery/jquery_ref_selectors.asp
+        $('#description').text(imageLayersTitles[currentImageLayerIndex]);
+
+        // http://jqueryui.com/button/
+        // http://api.jqueryui.com/button/
+        $(function() {
+            $( "#next" )
+                .button()
+                .click(function( event ) {
+                    nextImageLayer();
+                    event.preventDefault();
+                });
+          });
+
+        $(function() {
+            $( "#previous" )
+                .button()
+                .click(function( event ) {
+                    previousImageLayer();
+                    event.preventDefault();
+                });
+          });
+
+        // http://jqueryui.com/slider/
+        // http://api.jqueryui.com/slider/
+        $(function() {
+            $( "#slider" ).slider({
+                value: 0, // instead of min value + 1
+                min: 0,
+                max: maxImageLayerIndex,
+                step: 1,
+                slide: function (e, ui) {
+                    //console.log("slide ui.value=%d", ui.value);
+                    jumpToImageLayer(ui.value);
+                }
+            });
+        });
+
+        $(function() {
+            $( "#start-stop" )
+                .button()
+                .click(function( event ) {
+                    if (changeIsRunning) {
+                        window.clearInterval(changeIntervalHandle);
+                        changeIsRunning = false;
+                        } else {
+                        changeIntervalHandle = window.setInterval(nextImageLayer, 500);
+                        changeIsRunning = true;
+                    }
+                    event.preventDefault();
+                });
+          });
+
+        function nextImageLayer() {
+            map.removeLayer(imageLayers[currentImageLayerIndex]);
+            if (currentImageLayerIndex < maxImageLayerIndex) {
+                currentImageLayerIndex++;
+            } else {
+                currentImageLayerIndex = 0;
+            }
+            //console.log("next function index %d", currentImageLayerIndex)
+            map.addLayer(imageLayers[currentImageLayerIndex]);
+            $( "#slider" ).slider( "value", currentImageLayerIndex );
+            $( '#description' ).text(imageLayersTitles[currentImageLayerIndex]);
+        }
+
+        function previousImageLayer() {
+            map.removeLayer(imageLayers[currentImageLayerIndex]);
+            if (currentImageLayerIndex > 0) {
+                currentImageLayerIndex--;
+            } else {
+                currentImageLayerIndex = maxImageLayerIndex;
+            }
+            //console.log("previous index %d", currentImageLayerIndex)
+            map.addLayer(imageLayers[currentImageLayerIndex]);
+            $( "#slider" ).slider( "value", currentImageLayerIndex );
+            $('#description').text(imageLayersTitles[currentImageLayerIndex]);
+        }
+
+        function jumpToImageLayer(index) {
+            map.removeLayer(imageLayers[currentImageLayerIndex]);
+            currentImageLayerIndex = index;
+            map.addLayer(imageLayers[currentImageLayerIndex]);
+            // http://stackoverflow.com/questions/14186802/change-text-using-jquery
+            $('#description').text(imageLayersTitles[currentImageLayerIndex]);
+        }
+
+        // http://www.w3schools.com/js/js_timing.asp
+        var changeIntervalHandle = window.setInterval(nextImageLayer, 500);
+        var changeIsRunning = true;
+
+        // http://leafletjs.com/reference.html#icontrol
+        NextPreviousControl = L.Control.extend({
+            options: {
+                position: 'bottomleft'
+            },
+
+            initialize: function (options) {
+                L.Util.setOptions(this, options);
+            },
+
+            onAdd: function (map) {
+                this._map = map;
+
+                // create a control sliderContainer with a jquery ui slider
+                var container = L.DomUtil.create('div', 'next-previous')  //, this._container);
+                $(container).append('<input type="submit" id="previous" value="Previous" /><input type="submit" id="next" value="Next" /><input type="submit" id="start-stop" value="Start/Stop" /><div id="slider" style="width: 100%; margin-top: 10px;"></div><p id="description" style="width: 100%; height: 30%; margin-top: 10px; font: bold 20px/16px Tahoma,Verdana,sans-serif"></p><div id="opacity-slider" style="width: 70%; margin-top: 10px;"></div>');
+
+                // prevent map panning and zooming while using the slider
+                $(container).mousedown(function () {
+                    map.dragging.disable();
+                });
+                $(document).mouseup(function () {
+                    map.dragging.enable();
+                });
+
+                return container;
+            },
+
+            onRemove: function (map) {
+                $('#next-previous').remove();
+            },
+        });
+
+        // added recently, no user info
+        $(function() {
+            $( "#opacity-slider" ).slider({
+                value: 100, // instead of min value + 1
+                min: 0,
+                max: 100,
+                step: 1,
+                slide: function (e, ui) {
+                    for(var i = 0; i < imageLayers.length; i += 1) {
+                        value = ui.value / 100.0;
+                        imageLayers[i].setOpacity(value);
+                        if (value > 0.6) {
+                            value = 0.6
+                        } else if (value < 0.4) {
+                            value = 0.4
+                        }
+                        $( '#opacity-slider' ).css({ 'opacity': value });
+                    }
+                }
+            });
+        });
+
+        nextPreviousControl = new NextPreviousControl({layers: imageLayers, minIndex: 0, maxIndex: imageLayers.length});
+        map.addControl(nextPreviousControl);
+
+        // this is inconsistent, maybe init in control if it is supposed to be part of it
+        $( '#opacity-slider' ).css({ 'opacity': 0.6 });
+
+        console.log(map)
+        map.attributionControl.addAttribution('Overlay data &copy; by <a href="http://gis.ncsu.edu/osgeorel/" target="_blank">NCSU OSGeoREL</a>')
+
+    </script>
+</body>
+</html>
+
