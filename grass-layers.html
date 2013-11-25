@@ -27,24 +27,24 @@ License (>=v2). See the file LICENSE for details.
         }
         */
         .overlay {
-			position:absolute; 
-			padding: 6px 8px;
-			font: 14px/16px Tahoma,Verdana,sans-serif;
-			color: #223;
-			background-color: rgba(255,255,255,0.8);
-			border-radius: 5px;
-		}
-		.box {
+            position:absolute; 
+            padding: 6px 8px;
+            font: 14px/16px Tahoma,Verdana,sans-serif;
+            color: #223;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+        }
+        .box {
 
-			bottom:10%;
-			left:0.5%;
-			right:79%;
-				/*	width:50%; float:right*/
-		}
-		.box img {
-		    width: 90%;
-		    max-height: 20%;
-		}
+            bottom:10%;
+            left:0.5%;
+            right:79%;
+                /*    width:50%; float:right*/
+        }
+        .box img {
+            width: 90%;
+            max-height: 20%;
+        }
     </style>
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
@@ -57,7 +57,7 @@ License (>=v2). See the file LICENSE for details.
 <body>
 
     <div id="map"></div>
-    <div id="additional-info"class="overlay box"></div>
+    <div id="additional-info" class="overlay box"></div>
 
     <script src="libs/leaflet/leaflet.js"></script>
     <script src="data/data_file.js"></script>
@@ -119,7 +119,7 @@ License (>=v2). See the file LICENSE for details.
         // setting default map position and zoom
         // adding only layers which should be visible at the beginning
         var map = L.map('map', {
-            center: imageCenter,
+            center: imageCenter, // zoom to layer
             zoom: 15,
             layers: [osmLayer, imageLayers[0]]
         });
@@ -137,13 +137,46 @@ License (>=v2). See the file LICENSE for details.
         var maxImageLayerIndex = imageLayers.length - 1;
         console.log("max %d", maxImageLayerIndex)
 
-        function onOverlayAdd(layer) {
-            console.log(layer.name)
-            layerInfo = overlayInfos[layer.name]
-            overlay = overlayLayersList[layer.name]
-            currentOpacity = overlay.options.opacity * 100
+        function showLayerInfo(overlay, layerInfo) {
+
+        currentOpacity = overlay.options.opacity * 100
             console.log("overlay opacity: " + currentOpacity)
-            $('#additional-info').html('<h6>' + layerInfo.title + '</h6><div id="opacity-slider" style="width: 70%; margin: 10px; float: left;"></div><div id="opacity-number">' + currentOpacity + '</div><img alt="preview" src="data/' + layerInfo.file + '">')
+            $('#additional-info').html(
+                '<h5>' + layerInfo.title + '</h5>' +
+                '<div id="opacity-slider" style="width: 70%; margin: 10px; float: left;"></div>' +
+                '<div id="opacity-number">' + currentOpacity + '</div>' +
+                '<div id="info-sections">' +
+'<ul>' +
+'<li><a href="#info-statistics">Statistics</a></li>' +
+'<li><a href="#info-histogram">Histogram</a></li>' +
+'<li><a href="#info-thumbnail">Thumbnail</a></li>' +
+'</ul>' +
+'<div id="info-statistics">' +
+'<pre>Proin elit arcu, rutrum commodo,' +
+'\nvehicula tempus.</pre>' +
+'</div>' +
+'<div id="info-histogram">' +
+'<p>Morbi tincidunt, dui sit amet facilisis feugiat, odio </p>' +
+'</div>' +
+'<div id="info-thumbnail">' +
+'<img alt="map thumbnail" src="data/' + layerInfo.file + '">' +
+'</div>' +
+'</div>'
+                )
+
+/*
+ $(function() {
+$( "#additional-info" ).resizable();
+});
+
+ $(function() {
+$( "#additional-info" ).draggable();
+});
+*/
+
+ $(function() {
+$( "#info-sections" ).tabs();
+});
 
             // thumbnail
             // histogram
@@ -151,7 +184,7 @@ License (>=v2). See the file LICENSE for details.
             // r.info?
             // 3d image
             // description
-            // some command output?
+            // some general command output?
 
         // added recently, no user info
         $(function() {
@@ -162,19 +195,29 @@ License (>=v2). See the file LICENSE for details.
                 max: 100,
                 step: 1,
                 slide: function (e, ui) {
-                    console.log('opacity '+ ui.value+ layer)
+                    console.log('opacity '+ ui.value)
                     value = ui.value / 100.0;
                     overlay.setOpacity(value)
                     $( "#opacity-number" ).html(ui.value)
                 }
             });
         });
+        }
+
+        function onOverlayAdd(layer) {
+            console.log(layer.name)
+            
+        layerInfo = overlayInfos[layer.name]
+        overlay = overlayLayersList[layer.name]
+            
+            showLayerInfo(overlay, layerInfo)
             
         }
 
-        // zoom to layer
-
         map.on('overlayadd', onOverlayAdd, {autoZIndex: true})
+
+        // set the same layer as is added to the map
+        showLayerInfo(imageLayers[0], layerInfos[0])
 
         L.control.scale().addTo(map);
         map.attributionControl.addAttribution('Overlay data &copy; by <a href="http://gis.ncsu.edu/osgeorel/" target="_blank">NCSU OSGeoREL</a>')
