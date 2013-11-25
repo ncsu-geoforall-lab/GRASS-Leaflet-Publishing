@@ -141,8 +141,9 @@ License (>=v2). See the file LICENSE for details.
             console.log(layer.name)
             layerInfo = overlayInfos[layer.name]
             overlay = overlayLayersList[layer.name]
-            console.log("overlay opacity: " + overlay.opacity)
-            $('#additional-info').html('<h6>' + layerInfo.title + '</h6><div id="opacity-slider" style="width: 70%; margin: 10px; float: left;"></div><div id="opacity-number">' + 100 + '</div><img alt="preview" src="data/' + layerInfo.file + '">')
+            currentOpacity = overlay.options.opacity * 100
+            console.log("overlay opacity: " + currentOpacity)
+            $('#additional-info').html('<h6>' + layerInfo.title + '</h6><div id="opacity-slider" style="width: 70%; margin: 10px; float: left;"></div><div id="opacity-number">' + currentOpacity + '</div><img alt="preview" src="data/' + layerInfo.file + '">')
 
             // thumbnail
             // histogram
@@ -156,7 +157,7 @@ License (>=v2). See the file LICENSE for details.
         $(function() {
             console.log('slider')
             $( "#opacity-slider" ).slider({
-                value: 100, // instead of min value + 1
+                value: currentOpacity,
                 min: 0,
                 max: 100,
                 step: 1,
