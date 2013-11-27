@@ -14,6 +14,7 @@ TODO:
 * keep current section when switching layer info
 * separate control for switching layer infos
 * zoom to layer in layer info
+* link to original data (grass packed format/geotiff/non referenced png/...)
 -->
 <html>
 
@@ -56,6 +57,12 @@ TODO:
         .box img {
             width: 90%;
             max-height: 20%;
+        }
+        pre {
+            font-size: 70%;
+            height: auto;
+            max-height: 200px;
+            overflow-x:scroll;
         }
     </style>
 
@@ -158,28 +165,75 @@ TODO:
 
             currentOpacity = overlay.options.opacity * 100
             console.log("overlay opacity: " + currentOpacity)
-            $('#additional-info').html(
-                '<h5>' + layerInfo.title + '</h5>' +
+            additional = '<h5>' + layerInfo.title + '</h5>' +
                 '<div id="opacity-slider" style="width: 70%; margin: 10px; float: left;"></div>' +
                 '<div id="opacity-number">' + currentOpacity + '</div>' +
                 '<div id="info-sections">' +
-                '<ul>' +
-                '<li><a href="#info-statistics">Statistics</a></li>' +
-                '<li><a href="#info-histogram">Histogram</a></li>' +
-                '<li><a href="#info-thumbnail">Thumbnail</a></li>' +
-                '</ul>' +
-                '<div id="info-statistics">' +
-                '<pre>N:     228500    S:     215000   Res:    10 ' +
-                '\nE:     645000    W:     630000   Res:    10</pre>' +
-                '</div>' +
-                '<div id="info-histogram">' +
-                '<img alt="map thumbnail" src="data/' + layerInfo.file + '">' +
-                '</div>' +
+                '<ul>';
+            if ('statistics' in layerInfo) {
+                additional +=
+                   '<li><a href="#info-statistics">Statistics</a></li>';
+            }
+            if ('histogram' in layerInfo) {
+                additional +=
+                    '<li><a href="#info-histogram">Histogram</a></li>';
+            }
+            if ('piehistogram' in layerInfo) {
+                additional +=
+                    '<li><a href="#info-piehistogram">Pie histogram</a></li>';
+            }
+            if ('thumbnail' in layerInfo) {
+                additional +=
+                    '<li><a href="#info-thumbnail">Thumbnail</a></li>';
+            }
+            // adding always
+            additional +=
+                '<li><a href="#info-download">Download</a></li>' +
+                '</ul>';
+            if ('statistics' in layerInfo) {
+                additional +=
+                    '<div id="info-statistics">' +
+                    '<pre>' + layerInfo.statistics + '</pre>' +
+                    '</div>';
+            }
+            if ('histogram' in layerInfo) {
+                additional +=
+                    '<div id="info-histogram">' +
+                    '<img alt="map histogram" src="data/histograms/' + layerInfo.histogram + '">' +
+                    '</div>';
+            }
+            if ('piehistogram' in layerInfo) {
+                additional +=
+                    '<div id="info-piehistogram">' +
+                    '<img alt="map histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">' +
+                    '</div>';
+            }
+            additional +=
                 '<div id="info-thumbnail">' +
                 '<img alt="map thumbnail" src="data/' + layerInfo.file + '">' +
                 '</div>' +
+                '<div id="info-download">' +
+                '<ul>' +
+                '<li><a href="' + layerInfo.file + '">' + 'map image' + '</a></li>';
+            if ('histogram' in layerInfo) {
+                additional += '<li><a href="data/histograms/' + layerInfo.histogram + '">' + 'Histogram' + '</a></li>';
+            }
+            if ('piehistogram' in layerInfo) {
+                additional += '<li><a href="data/pie-histograms/' + layerInfo.histogram + '">' + 'Pie histogram' + '</a></li>';
+            }
+            if ('statisticsfile' in layerInfo) {
+                additional += '<li><a href="data/statistics/' + layerInfo.statisticsfile + '">' + 'Raster statistics' + '</a></li>';
+            }
+            if ('geotiff' in layerInfo) {
+                additional += '<li><a href="data/geotiffs/' + layerInfo.geotiff + '">' + 'GeoTIFF in original projection' + '</a></li>';
+            }
+            if ('packedmap' in layerInfo) {
+                additional += '<li><a href="data/packed-maps' + layerInfo.packedmap + '">' + 'Packed GRASS raster map in original projection' + '</a></li>';
+            }
+            additional += '</ul>' +
+                '</div>' +
                 '</div>'
-            )
+            $('#additional-info').html(additional)
 
             /*
             $(function() {
