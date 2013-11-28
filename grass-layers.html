@@ -9,6 +9,7 @@ License (>=v2). See the file LICENSE for details.
 
 TODO:
 * move empty elements to HTML rather then generating them completely?
+* rewrite HTML generation to jQuery?
 * keep current section when switching layer info
 * separate control for switching layer infos
 * zoom to layer in layer info
@@ -150,12 +151,8 @@ TODO:
     <script src="libs/leaflet/leaflet.js"></script>
     <script src="data/data_file.js"></script>
     <script>
-        // string: http://www.w3schools.com/jsref/jsref_obj_string.asp
-        // array: http://www.w3schools.com/js/js_obj_array.asp
-        // log to browser console:
-        // http://stackoverflow.com/questions/4539253/what-is-console-log
-        // http://getfirebug.com/logging
-        // https://developers.google.com/chrome-developer-tools/docs/console
+        // determines if all histograms should be in one section
+        var mergeHistograms = true;
 
         // create OpenStreetMap layer
         var osmLayer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
@@ -229,6 +226,11 @@ TODO:
         var maxImageLayerIndex = imageLayers.length - 1;
         console.log("max %d", maxImageLayerIndex)
 
+        // holds the active (current) tab index from info section tabs
+        // we expect that all layers has the same info
+        // so the index is applicable for all and means the same
+        var currentInfoTab = 0;
+
         function showLayerInfo(overlay, layerInfo) {
 
             currentOpacity = overlay.options.opacity * 100
@@ -244,11 +246,11 @@ TODO:
                 additional +=
                    '<li><a href="#info-statistics">Statistics</a></li>';
             }
-            if ('histogram' in layerInfo) {
+            if ('histogram' in layerInfo || (mergeHistograms && 'piehistogram' in layerInfo)) {
                 additional +=
                     '<li><a href="#info-histogram">Histogram</a></li>';
             }
-            if ('piehistogram' in layerInfo) {
+            if ('piehistogram' in layerInfo && !mergeHistograms) {
                 additional +=
                     '<li><a href="#info-piehistogram">Pie histogram</a></li>';
             }
@@ -266,17 +268,30 @@ TODO:
                     '<pre>' + layerInfo.statistics + '</pre>' +
                     '</div>';
             }
-            if ('histogram' in layerInfo) {
-                additional +=
-                    '<div id="info-histogram">' +
-                    '<img alt="map histogram" src="data/histograms/' + layerInfo.histogram + '">' +
-                    '</div>';
-            }
-            if ('piehistogram' in layerInfo) {
-                additional +=
-                    '<div id="info-piehistogram">' +
-                    '<img alt="map histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">' +
-                    '</div>';
+            if (mergeHistograms && ('histogram' in layerInfo || 'piehistogram' in layerInfo)) {
+                additional += '<div id="info-histogram">';
+                if ('histogram' in layerInfo) {
+                    additional +=
+                        '<img alt="map histogram" src="data/histograms/' + layerInfo.histogram + '">';
+                }
+                if ('piehistogram' in layerInfo) {
+                    additional +=
+                        '<img alt="map histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">';
+                }
+                additional += '</div>';
+            } else {
+                if ('histogram' in layerInfo) {
+                    additional +=
+                        '<div id="info-histogram">' +
+                        '<img alt="map histogram" src="data/histograms/' + layerInfo.histogram + '">' +
+                        '</div>';
+                }
+                if ('piehistogram' in layerInfo) {
+                    additional +=
+                        '<div id="info-piehistogram">' +
+                        '<img alt="map histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">' +
+                        '</div>';
+                }
             }
             additional +=
                 '<div id="info-thumbnail">' +
@@ -312,18 +327,13 @@ TODO:
                 '</div>'
             $('#additional-info').html(additional)
 
-            /*
-            $(function() {
-                $( "#additional-info" ).resizable();
-            });
-
-            $(function() {
-                $( "#additional-info" ).draggable();
-            });
-            */
-
             $(function () {
-                $("#info-sections").tabs();
+                $("#info-sections").tabs({
+                    active: currentInfoTab,
+                    activate: function(event, ui) {
+                        currentInfoTab = $("#info-sections").tabs("option", "active");
+                    }
+                });
             });
 
             // thumbnail
