@@ -8,13 +8,11 @@ License (>=v2). See the file LICENSE for details.
 <!--
 
 TODO:
-* solve styles, position and resizing of layer info
 * move empty elements to HTML rather then generating them completely?
-* reading of layer info (now just placeholders)
 * keep current section when switching layer info
 * separate control for switching layer infos
 * zoom to layer in layer info
-* link to original data (grass packed format/geotiff/non referenced png/...)
+* load original projection and display current
 -->
 <html>
 
@@ -282,25 +280,32 @@ TODO:
             }
             additional +=
                 '<div id="info-thumbnail">' +
-                '<img alt="map thumbnail" src="data/' + layerInfo.file + '">' +
+                '<a href="data/' + layerInfo.file + '" target="_blank" title="Open map image in new window">' +
+                '<img alt="map thumbnail" src="data/thumbnails/' + layerInfo.thumbnail + '">' +
+                '</a>' +
                 '</div>' +
                 '<div id="info-download">' +
                 '<ul>' +
-                '<li><a href="' + layerInfo.file + '">' + 'map image' + '</a></li>';
+                '<li><a href="data/' + layerInfo.file + '" target="_blank">' + 'Map image' + '</a></li>';
             if ('histogram' in layerInfo) {
-                additional += '<li><a href="data/histograms/' + layerInfo.histogram + '">' + 'Histogram' + '</a></li>';
+                additional += '<li><a href="data/histograms/' + layerInfo.histogram + '" target="_blank">' +
+                'Histogram' + '</a></li>';
             }
             if ('piehistogram' in layerInfo) {
-                additional += '<li><a href="data/pie-histograms/' + layerInfo.histogram + '">' + 'Pie histogram' + '</a></li>';
+                additional += '<li><a href="data/pie-histograms/' + layerInfo.histogram + '" target="_blank">' +
+                'Pie histogram' + '</a></li>';
             }
             if ('statisticsfile' in layerInfo) {
-                additional += '<li><a href="data/statistics/' + layerInfo.statisticsfile + '">' + 'Raster statistics' + '</a></li>';
+                additional += '<li><a href="data/statistics/' + layerInfo.statisticsfile + '" target="_blank">' +
+                'Raster statistics' + '</a></li>';
             }
             if ('geotiff' in layerInfo) {
-                additional += '<li><a href="data/geotiffs/' + layerInfo.geotiff + '">' + 'GeoTIFF in original projection' + '</a></li>';
+                additional += '<li><a href="data/geotiffs/' + layerInfo.geotiff + '">' +
+                'GeoTIFF in original projection' + '</a></li>';
             }
             if ('packedmap' in layerInfo) {
-                additional += '<li><a href="data/packed-maps' + layerInfo.packedmap + '">' + 'Packed GRASS raster map in original projection' + '</a></li>';
+                additional += '<li><a href="data/packed-maps/' + layerInfo.packedmap + '">' +
+                'Packed GRASS raster map in original projection' + '</a></li>';
             }
             additional += '</ul>' +
                 '</div>' +
@@ -349,12 +354,9 @@ TODO:
 
         function onOverlayAdd(layer) {
             console.log(layer.name)
-
             layerInfo = overlayInfos[layer.name]
             overlay = overlayLayersList[layer.name]
-
             showLayerInfo(overlay, layerInfo)
-
         }
 
         map.on('overlayadd', onOverlayAdd, {
