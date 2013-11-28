@@ -119,6 +119,23 @@ TODO:
             margin: 5px;
             /*float: left;*/
         }
+        #opacity-slider:after {
+            content: "Opacity";
+            font: 11px/12px Tahoma, Verdana, sans-serif;
+            padding: 2px;
+            vertical-align: top;
+            color: #a0a0a0;
+            opacity: 0.8;
+        }
+        #opacity-slider a {
+            text-decoration: none !important;
+        }
+        #opacity-slider .ui-slider-handle:after {
+            content: attr(opacity-value);
+            font: 11px/12px Tahoma, Verdana, sans-serif;
+            padding: 2px;
+            color: #a0a0a0;
+        }
         #opacity-number {
             margin: 10px;
             float: left;
@@ -237,7 +254,7 @@ TODO:
             console.log("overlay opacity: " + currentOpacity)
             additional = '<h3>' + layerInfo.title + '</h3>' +
                 '<div id="opacity-control">' +
-                '<div id="opacity-slider"></div>' +
+                '<div id="opacity-slider" title="Slide to change opacity"></div>' +
                 '<div id="opacity-number">' + currentOpacity + '</div>' +
                 '</div>' +
                 '<div id="info-sections">' +
@@ -272,11 +289,11 @@ TODO:
                 additional += '<div id="info-histogram">';
                 if ('histogram' in layerInfo) {
                     additional +=
-                        '<img alt="map histogram" src="data/histograms/' + layerInfo.histogram + '">';
+                        '<img alt="map histogram" title="Bar histogram" src="data/histograms/' + layerInfo.histogram + '">';
                 }
                 if ('piehistogram' in layerInfo) {
                     additional +=
-                        '<img alt="map histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">';
+                        '<img alt="map histogram" title="Pie histogram" src="data/pie-histograms/' + layerInfo.piehistogram + '">';
                 }
                 additional += '</div>';
             } else {
@@ -346,17 +363,16 @@ TODO:
 
             // added recently, no user info
             $(function () {
-                console.log('slider')
                 $("#opacity-slider").slider({
                     value: currentOpacity,
                     min: 0,
                     max: 100,
                     step: 1,
                     slide: function (e, ui) {
-                        console.log('opacity ' + ui.value)
                         value = ui.value / 100.0;
-                        overlay.setOpacity(value)
-                        $("#opacity-number").html(ui.value)
+                        overlay.setOpacity(value);
+                        $("#opacity-number").html(ui.value);
+                        $(".ui-slider-handle").attr("opacity-value", ui.value)
                     }
                 });
             });
