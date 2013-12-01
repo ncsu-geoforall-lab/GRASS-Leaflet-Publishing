@@ -14,6 +14,12 @@ TODO:
 * separate control for switching layer infos
 * zoom to layer in layer info
 * load original projection and display current
+* switch info panel when only one map is active?
+* include information about usage of computation region versus map extent
+* migrate to configuration file and convention from reading all from object
+* 3d image
+* description
+* some general command output?
 -->
 <html>
 
@@ -136,6 +142,8 @@ TODO:
             padding: 2px;
             color: #a0a0a0;
         }
+        /* opacity-number is not displayed because it is not needed
+           there is a number in after pseudo element */
         #opacity-number {
             margin: 10px;
             float: left;
@@ -150,6 +158,20 @@ TODO:
         }
         #info-download li {
             padding: 0.1em;
+        }
+        .left-col
+        {
+            float: left;
+            margin-right: 0.7em;
+            margin-bottom: 0.4em;
+        }
+        .right-col
+        {
+            padding: 0.5em;
+        }
+        #legend-image {
+            height: 300px;
+            margin: 5px;
         }
     </style>
 
@@ -259,6 +281,10 @@ TODO:
                 '</div>' +
                 '<div id="info-sections">' +
                 '<ul>';
+            if ('legend' in layerInfo) {
+                additional +=
+                   '<li><a href="#info-legend">Legend</a></li>';
+            }
             if ('statistics' in layerInfo) {
                 additional +=
                    '<li><a href="#info-statistics">Statistics</a></li>';
@@ -279,6 +305,16 @@ TODO:
             additional +=
                 '<li><a href="#info-download">Download</a></li>' +
                 '</ul>';
+            if ('legend' in layerInfo) {
+                additional +=
+                    '<div id="info-legend">' +
+                    '<img id="legend-image" alt="map thumbnail" src="data/legends/' + layerInfo.legend + '" class="left-col">';
+                    if ('info' in layerInfo) {
+                        additional +=
+                            '<p class="right-col"><pre>' + layerInfo.info + '</pre></p>';
+                    }
+                    additional += '</div>';
+            }
             if ('statistics' in layerInfo) {
                 additional +=
                     '<div id="info-statistics">' +
@@ -310,15 +346,22 @@ TODO:
                         '</div>';
                 }
             }
+            if ('thumbnail' in layerInfo) {
+                additional +=
+                    '<div id="info-thumbnail">' +
+                    '<a href="data/' + layerInfo.file + '" target="_blank" title="Open map image in new window">' +
+                    '<img alt="map thumbnail" src="data/thumbnails/' + layerInfo.thumbnail + '">' +
+                    '</a>' +
+                    '</div>'
+            }
             additional +=
-                '<div id="info-thumbnail">' +
-                '<a href="data/' + layerInfo.file + '" target="_blank" title="Open map image in new window">' +
-                '<img alt="map thumbnail" src="data/thumbnails/' + layerInfo.thumbnail + '">' +
-                '</a>' +
-                '</div>' +
                 '<div id="info-download">' +
                 '<ul>' +
                 '<li><a href="data/' + layerInfo.file + '" target="_blank">' + 'Map image' + '</a></li>';
+            if ('legend' in layerInfo) {
+                additional += '<li><a href="data/legends/' + layerInfo.legend + '" target="_blank">' +
+                    'Legend' + '</a></li>';
+            }
             if ('histogram' in layerInfo) {
                 additional += '<li><a href="data/histograms/' + layerInfo.histogram + '" target="_blank">' +
                 'Histogram' + '</a></li>';
@@ -326,6 +369,10 @@ TODO:
             if ('piehistogram' in layerInfo) {
                 additional += '<li><a href="data/pie-histograms/' + layerInfo.histogram + '" target="_blank">' +
                 'Pie histogram' + '</a></li>';
+            }
+            if ('info' in layerInfo) {
+                additional += '<li><a href="data/infos/' + layerInfo.infofile + '" target="_blank">' +
+                    'Raster info' + '</a></li>';
             }
             if ('statisticsfile' in layerInfo) {
                 additional += '<li><a href="data/statistics/' + layerInfo.statisticsfile + '" target="_blank">' +
@@ -353,15 +400,6 @@ TODO:
                 });
             });
 
-            // thumbnail
-            // histogram
-            // statistics
-            // r.info?
-            // 3d image
-            // description
-            // some general command output?
-
-            // added recently, no user info
             $(function () {
                 $("#opacity-slider").slider({
                     value: currentOpacity,
