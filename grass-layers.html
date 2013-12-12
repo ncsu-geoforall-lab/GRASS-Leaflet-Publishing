@@ -173,6 +173,18 @@ TODO:
             height: 300px;
             margin: 5px;
         }
+        /* scientists want to see pixels not blured image */
+        /* does not work for Chrome/Chromium */
+        img.leaflet-image-layer {
+            image-rendering:optimizeSpeed;             /* Legal fallback */
+            image-rendering:-moz-crisp-edges;          /* Firefox        */
+            image-rendering:-o-crisp-edges;            /* Opera          */
+            image-rendering:-webkit-optimize-contrast; /* Safari         */
+            image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+            image-rendering:crisp-edges;               /* CSS4 Proposed  */
+            image-rendering:pixelated;                 /* CSS4 Proposed  */
+            -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+        }
     </style>
 
     <script src="https://code.jquery.com/jquery-1.9.1.js"></script>

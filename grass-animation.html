@@ -21,6 +21,18 @@ License (>=v2). See the file LICENSE for details.
         html, body, #map {
             height: 100%;
         }
+        /* scientists want to see pixels not blured image */
+        /* does not work for Chrome/Chromium */
+        img.leaflet-image-layer {
+            image-rendering:optimizeSpeed;             /* Legal fallback */
+            image-rendering:-moz-crisp-edges;          /* Firefox        */
+            image-rendering:-o-crisp-edges;            /* Opera          */
+            image-rendering:-webkit-optimize-contrast; /* Safari         */
+            image-rendering:optimize-contrast;         /* CSS3 Proposed  */
+            image-rendering:crisp-edges;               /* CSS4 Proposed  */
+            image-rendering:pixelated;                 /* CSS4 Proposed  */
+            -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
+        }
     </style>
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
