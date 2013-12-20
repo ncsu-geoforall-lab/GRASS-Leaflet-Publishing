@@ -24,7 +24,7 @@ TODO:
 <html>
 
 <head>
-    <title>Leaflet Jockey's Ridge elevation</title>
+    <title>GRASS GIS Layers web viewer</title>
     <meta charset="utf-8" />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -240,10 +240,16 @@ TODO:
             subdomains: subDomains
         });
 
+        // gray scale layer
+        var osmGray = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors <a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC BY-SA</a>'
+});
+
         // create list of all base layers
         var baseLayersList = {
             "Open Street Map": osmLayer,
-            "MapQuest imagery": mapquest
+            "MapQuest imagery": mapquest,
+            "OSM gray scale": osmGray
         };
 
         // create image overlay layers
