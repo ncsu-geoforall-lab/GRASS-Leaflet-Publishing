@@ -33,6 +33,19 @@ TODO:
 
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 
+    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="libs/leaflet/leaflet.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="libs/leaflet/leaflet.ie.css" /><![endif]-->
+
+    <script src="libs/leaflet/leaflet.js"></script>
+    <script src="libs/shramov-leaflet-plugins/control/Permalink.js"></script>
+    <!--
+        Permalink.Layer works only for base layers
+        Permalink.Marker does not have documentation
+    -->
+
     <style>
         body {
             padding: 0;
@@ -185,13 +198,14 @@ TODO:
             image-rendering:pixelated;                 /* CSS4 Proposed  */
             -ms-interpolation-mode:nearest-neighbor;   /* IE8+           */
         }
+        .leaflet-control-permalink {
+            padding: 0px;
+            padding-left: 3px;
+            padding-right: 3px;
+            margin-left: 5px !important;
+            margin-bottom: 2px !important;
+        }
     </style>
-
-    <script src="https://code.jquery.com/jquery-1.9.1.js"></script>
-    <script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-
-    <link rel="stylesheet" href="libs/leaflet/leaflet.css" />
-    <!--[if lte IE 8]><link rel="stylesheet" href="libs/leaflet/leaflet.ie.css" /><![endif]-->
 </head>
 
 <body>
@@ -199,7 +213,6 @@ TODO:
     <div id="map"></div>
     <div id="additional-info" class="overlay box"></div>
 
-    <script src="libs/leaflet/leaflet.js"></script>
     <script src="data/data_file.js"></script>
     <script>
         // determines if all histograms should be in one section
@@ -444,6 +457,7 @@ TODO:
 
         L.control.scale().addTo(map);
         map.attributionControl.addAttribution('Overlay data &copy; by <a href="http://gis.ncsu.edu/osgeorel/" target="_blank">NCSU OSGeoREL</a>')
+        map.addControl(new L.Control.Permalink());
     </script>
 </body>
 
