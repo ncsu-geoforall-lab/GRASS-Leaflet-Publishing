@@ -46,6 +46,10 @@ TODO:
         Permalink.Marker does not have documentation
     -->
 
+    <script type="text/javascript" src="libs/Leaflet.Coordinates/dist/Leaflet.Coordinates-0.1.3.min.js"></script>
+    <link rel="stylesheet" href="libs/Leaflet.Coordinates/dist/Leaflet.Coordinates-0.1.3.css"/>
+    <!--[if lte IE 8]><link rel="stylesheet" href="libs/Leaflet.Coordinates/ist/Leaflet.Coordinates-0.1.3.ie.css" /><![endif]-->
+
     <style>
         body {
             padding: 0;
@@ -202,8 +206,9 @@ TODO:
             padding: 0px;
             padding-left: 3px;
             padding-right: 3px;
-            margin-left: 5px !important;
+            margin-right: 10px !important;
             margin-bottom: 2px !important;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -457,7 +462,21 @@ TODO:
 
         L.control.scale().addTo(map);
         map.attributionControl.addAttribution('Overlay data &copy; by <a href="http://gis.ncsu.edu/osgeorel/" target="_blank">NCSU OSGeoREL</a>')
-        map.addControl(new L.Control.Permalink());
+        /*
+            decimals: 2 not supported with DMS
+        */
+        L.control.coordinates({
+            position: "bottomright",
+            labelTemplateLat: "Latitude: {y}",
+            labelTemplateLng: "Longitude: {x}",
+            useDMS: true,
+            enableUserInput: false
+        }).addTo(map);
+
+        map.addControl(new L.Control.Permalink({
+            position: "bottomright",
+            text: "Permanent link for map postion"
+        }));
     </script>
 </body>
 
