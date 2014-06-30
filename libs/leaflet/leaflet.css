@@ -38,9 +38,8 @@
 .leaflet-container img {
 	max-width: none !important;
 	}
-/* stupid Android 2 doesn't understand "max-width: none" properly */
+
 .leaflet-container img.leaflet-image-layer {
-	/* max-width: 15000px !important; */
 	max-width: none !important;
 	}
 .leaflet-tile {
